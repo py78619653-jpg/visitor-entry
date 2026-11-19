@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visitor Entry Pro</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1f63a8">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<style>
+:root{--bg:#f1f4f8;--card:#fff;--tx:#1b2430;--mu:#667085;--pr:#1f63a8;--bd:#cfd6e0;--ok:#1a7f45;--wr:#b54708}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--card:#1a212b;--tx:#e8edf3;--mu:#9aa6b6;--pr:#4b8fd6;--bd:#334052;--ok:#4cc27f;--wr:#f0a35a}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px system-ui,Arial,sans-serif}
+.w{max-width:760px;margin:auto;padding:12px}
+header{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+h1{font-size:20px;margin:0;color:var(--pr);flex:1}
+.card{background:var(--card);border-radius:14px;padding:16px;border:1px solid var(--bd)}
+button,input,select{font:inherit;color:var(--tx)}
+input,select{width:100%;padding:13px;margin:6px 0;border:1px solid var(--bd);border-radius:8px;background:var(--card)}
+button{padding:12px 16px;border:0;border-radius:8px;background:var(--pr);color:#fff;font-weight:600;cursor:pointer;width:100%;margin:5px 0}
+button.s{background:var(--card);color:var(--pr);border:1px solid var(--pr)}button:disabled{opacity:.5}
+.tabs{display:flex;gap:6px}.tabs button{width:auto;margin:0}.tabs .on{background:var(--pr);color:#fff}
+video,#snap{width:100%;max-height:260px;border-radius:10px;background:#000;display:none}
+.row{display:flex;gap:8px}.row>*{flex:1}.st{display:flex;gap:8px;margin-bottom:10px}
+.st div{flex:1;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:10px;text-align:center}.st b{font-size:22px;display:block}
+.ov{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{padding:8px;border-bottom:1px solid var(--bd);text-align:left}img.t{width:40px;height:40px;border-radius:6px;object-fit:cover}
+.in{color:var(--wr);font-weight:600}.out{color:var(--ok);font-weight:600}.err{color:#d92d20;font-size:14px;min-height:18px}
+#pass{text-align:center}#qr{display:inline-block;padding:10px;background:#fff;border-radius:8px}.hide{display:none}
+.sticky{position:sticky;bottom:0;padding-bottom:6px;background:var(--bg)}
+@media print{.w>*:not(#pass),#pass button,header{display:none!important}#pass{border:0}}
+.ov-row{background:rgba(217,45,32,.14)}
+body.pe .w>*:not(#emg){display:none!important}body.pe #emg{display:block!important}
+</style>
+</head>
+<body>
+<div class="w">
+<header><div style="flex:1"><h1 id="brand" style="margin:0"></h1><small id="clk" style="color:var(--mu)"></small></div>
+<select id="lang" style="width:auto;margin:0"><option value="en">English</option><option value="gu">ગુજરાતી</option></select>
+<button id="inst" class="hide" style="width:auto;margin:0">Install App</button>
+<div class="tabs"><button id="t1" class="on" data-i="tabEntry">Entry</button><button id="t2" class="s" data-i="tabAdmin">Guard/Admin</button></div></header>
+
+<section id="v1" class="card">
+<form id="f" onsubmit="return false">
+<input id="name" data-p="name" placeholder="Visitor Name *" autocomplete="off">
+<input id="mob" data-p="mob" placeholder="Mobile Number * (10 digits)" inputmode="numeric" maxlength="10">
+<div id="pa" style="color:var(--ok);font-size:14px"></div>
+<input id="co" data-p="co" placeholder="Company Name">
+<input id="hname" list="hl" placeholder="Person to Meet *" autocomplete="off"><datalist id="hl"></datalist>
+<select id="pur"></select>
+<input id="veh" data-p="veh" placeholder="Vehicle Number (GJ01AB1234)" style="text-transform:uppercase">
+<b data-i="selfie">Visitor Selfie *</b>
+<video id="vid" autoplay playsinline muted></video><canvas id="snap"></canvas>
+<div class="row"><button type="button" id="cam" class="s" data-i="openCam">Open Front Camera</button><button type="button" id="cap" disabled data-i="cap">Capture Selfie</button></div>
+<button type="button" id="upb" class="s">Or take / upload photo</button><input type="file" id="fup" accept="image/*" capture="user" style="display:none">
+<div id="selfieSt" style="color:var(--mu)">Selfie not captured</div>
+<label style="display:flex;gap:8px;align-items:center;margin:8px 0;font-size:14px"><input type="checkbox" id="cons" style="width:auto;margin:0">I agree my photo and details are stored for security purposes. *</label><div class="err" id="err"></div>
+<div class="sticky"><button id="sub" data-i="submit">Submit Visitor Entry</button></div>
+</form></section>
+
+<section id="pass" class="card hide">
+<h2 style="color:var(--ok)" data-i="done">Entry Successful ✔</h2>
+<img id="pph" class="t" style="width:80px;height:80px" alt=""><br><div id="qr"></div><h3 id="pid"></h3><div id="pinfo" style="color:var(--mu)"></div><div id="psync" style="margin:6px 0;font-size:14px"></div>
+<button class="s" id="prt">Print Pass</button><button class="s" id="again" data-i="new">New Entry</button>
+</section>
+
+<section id="v2" class="hide">
+<div class="st"><div><b id="s1">0</b><span data-i="total">Total</span></div><div><b id="s2">0</b><span data-i="inside">Inside</span></div><div><b id="s3">0</b><span data-i="exited">Exited</span></div></div>
+<div id="syncst" style="font-size:13px;color:var(--mu);margin:0 0 8px"></div>
+<div class="card" id="an" style="margin-bottom:10px"></div>
+<div class="card">
+<div class="row"><input id="q" placeholder="Search name / mobile / pass ID"><input id="d" type="date"></div>
+<div class="row"><input id="pidIn" placeholder="Pass ID → Check-out"><button id="co2" style="flex:0 0 130px">Check-out</button></div>
+<div class="row"><button class="s" id="scan">Scan QR to Check-out</button><button class="s" id="all">Check-out all inside</button></div>
+<video id="sv" playsinline muted style="display:none;width:100%;max-height:240px;border-radius:10px"></video><canvas id="sc" class="hide"></canvas>
+<div class="row"><button class="s" id="emgb">🚨 Emergency List</button><button class="s" id="sum">Daily Summary → WhatsApp</button></div>
+<div class="row"><input id="pn" placeholder="Expected visitor name"><input id="pm" placeholder="Mobile" maxlength="10" inputmode="numeric"></div><div class="row"><button id="paa">Pre-approve</button></div>
+<div class="row"><input id="bl" placeholder="Blacklist mobile number"><button id="bla" style="flex:0 0 130px">Block</button></div><div id="bll" style="color:var(--mu);font-size:13px"></div>
+<div class="row"><button class="s" id="rf">Refresh from Sheet</button><button class="s" id="csv">Export CSV</button></div>
+<div class="ov"><table><thead><tr><th></th><th>Visitor</th><th>Host</th><th>In</th><th>Out</th><th></th></tr></thead><tbody id="tb"></tbody></table></div>
+</div></section>
+<section id="emg" class="card hide"></section>
+<footer id="ft" style="text-align:center;color:var(--mu);font-size:13px;margin:18px 0 10px;line-height:1.7"></footer>
+</div>
+
+<script>
+// ===== SETTINGS (edit these) =====
+let HOSTS=[{n:"IT Support",p:"917861965953"},{n:"Vijay Garg Sir",p:"919999999902"},{n:"IT – Jay Bhai",p:"916357314919"},{n:"Director",p:"919999999904"}];
+try{const _h=JSON.parse(localStorage.getItem("hosts")||"null");if(_h&&_h.length)HOSTS=_h}catch(e){}
+const PURPOSES=["Meeting","Delivery","Interview","Maintenance/Service","Vendor/Supplier","Other"];
+const PIN="1234"; // Guard/Admin tab PIN
+const COMPANY="MKC Infra Ltd";
+const CREATED_BY="IT Support, MKC Infra Ltd"; // app creator name shown at the bottom
+const HELPER_BY="Claude AI"; // helper name shown at the bottom
+const BOSS_PHONE="917861965953"; // daily summary goes to this WhatsApp number
+const OVER=4; // hours after which a visitor still inside is highlighted red
+const SHEET_URL="https://script.google.com/macros/s/AKfycbyIVgV2CBqxrv1OeCqwS-vuG5hpPUqrhIGsylRgijkTfgH0Z7fBg_3upuw_bLhbrXk/exec"; // Optional: Google Apps Script web-app URL to also save each entry to Google Sheet
+// =================================
+const $=s=>document.querySelector(s);
+const L={en:{title:"Visitor Entry",tabEntry:"Entry",tabAdmin:"Guard/Admin",selfie:"Visitor Selfie *",openCam:"Open Front Camera",cap:"Capture Selfie",submit:"Submit Visitor Entry",done:"Entry Successful ✔",new:"New Entry",total:"Total",inside:"Inside",exited:"Exited",
+ name:"Visitor Name *",mob:"Mobile Number * (10 digits)",co:"Company Name",veh:"Vehicle Number (GJ01AB1234)"},
+gu:{title:"મુલાકાતી એન્ટ્રી",tabEntry:"એન્ટ્રી",tabAdmin:"ગાર્ડ/એડમિન",selfie:"મુલાકાતીની સેલ્ફી *",openCam:"ફ્રન્ટ કેમેરા ખોલો",cap:"સેલ્ફી લો",submit:"એન્ટ્રી સબમિટ કરો",done:"એન્ટ્રી સફળ ✔",new:"નવી એન્ટ્રી",total:"કુલ",inside:"અંદર",exited:"બહાર ગયા",
+ name:"મુલાકાતીનું નામ *",mob:"મોબાઇલ નંબર * (10 આંકડા)",co:"કંપનીનું નામ",veh:"વાહન નંબર (GJ01AB1234)"}};
+function setLang(l){$("#hl").innerHTML=HOSTS.map(h=>`<option value="${h.n}">`).join("");$("#hname").placeholder=l=="gu"?"કોણે મળવું છે *":"Person to Meet *";document.querySelectorAll("[data-i]").forEach(e=>e.textContent=L[l][e.dataset.i]);document.querySelectorAll("[data-p]").forEach(e=>e.placeholder=L[l][e.dataset.p]);
+ 
+ $("#pur").innerHTML='<option value="">'+(l=="gu"?"મુલાકાતનો હેતુ *":"Purpose of Visit *")+'</option>'+PURPOSES.map(p=>`<option>${p}</option>`).join("");}
+function load(){try{return JSON.parse(localStorage.getItem("ve")||"[]")}catch(e){return[]}}
+function save(a){try{localStorage.setItem("ve",JSON.stringify(a))}catch(e){alert("Storage full – export CSV and clear old data")}}
+let stream=null,selfie="",last=null;
+$("#brand").textContent=COMPANY+" – Visitor Management";document.title=COMPANY+" Visitor Management";const ck=()=>$("#clk").textContent=new Date().toLocaleString([],{dateStyle:"medium",timeStyle:"short"});ck();setInterval(ck,3e4);
+const GUARD=(()=>{try{if(location.hash==="#guard")localStorage.setItem("guard","1");return localStorage.getItem("guard")==="1"}catch(e){return location.hash==="#guard"}})();
+async function post(o){try{const r=await fetch(SHEET_URL,{method:"POST",body:JSON.stringify(o)});return (await r.text()).trim()==="ok"}catch(e){try{await fetch(SHEET_URL,{method:"POST",mode:"no-cors",body:JSON.stringify(o)});return true}catch(e2){return false}}}
+let fl=false;
+async function flush(){if(!SHEET_URL||fl)return;fl=true;try{const upd=[];for(const x of load()){if(!x.sy){if(await post(x))upd.push([x.id,"sy"]);else continue}if(x.outT&&!x.osy){if(await post({action:"out",id:x.id,outT:x.outT}))upd.push([x.id,"osy"])}}
+ if(upd.length){const b=load();upd.forEach(([id,k])=>{const y=b.find(z=>z.id==id);if(y)y[k]=1});save(b)}}finally{fl=false}}
+function SS(t){const e=$("#syncst");if(e)e.textContent=t}
+async function pull(){if(!SHEET_URL)return;await flush();try{const r=await fetch(SHEET_URL+"?t="+Date.now());const a=await r.json();if(Array.isArray(a)){const L=load();a.forEach(x=>{x.sy=1;if(x.outT)x.osy=1;const l=L.find(z=>z.id==x.id);if(l){if(l.outT&&!x.outT)x.outT=l.outT;if(!x.selfie)x.selfie=l.selfie}});save([...a,...L.filter(x=>!a.some(y=>y.id==x.id))]);SS("✔ Connected to Google Sheet • "+a.length+" records")}else SS("⚠ Cannot read Google Sheet")}catch(e){SS("⚠ Cannot read Google Sheet")}}
+setTimeout(flush,2500);addEventListener("online",flush);
+setInterval(()=>{if(!$("#v2").classList.contains("hide"))pull().then(render)},30000);
+$("#ft").innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;text-align:left;padding:0 6px"><div><div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;opacity:.8">Created By</div><b>Vijay Garg</b><br>(IT/HOD)</div><div style="text-align:right"><div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;opacity:.8">Technical Support Team</div><b>Jay Patel</b> (IT Assistant Manager)<br><b>Alpesh Goswami</b> (IT Deputy Manager)</div></div>';
+let dp=null;window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();dp=e;$("#inst").classList.remove("hide")});
+$("#inst").onclick=async()=>{if(!dp)return;dp.prompt();await dp.userChoice;dp=null;$("#inst").classList.add("hide")};
+if("serviceWorker" in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("sw.js").catch(()=>{});
+$("#lang").onchange=e=>setLang(e.target.value);setLang("en");
+function tab(n){stopScan();$("#v1").classList.toggle("hide",n!=1||!$("#pass").classList.contains("hide")&&n==1&&false);
+ $("#v1").classList.toggle("hide",n!=1);$("#pass").classList.add("hide");$("#v2").classList.toggle("hide",n!=2);
+ $("#t1").className=n==1?"on":"s";$("#t2").className=n==2?"on":"s";if(n==2){render();pull().then(render)}}
+$("#t1").onclick=()=>tab(1);let ok=false;$("#t2").onclick=()=>{if(!ok){if(prompt("Enter Guard/Admin PIN")!==PIN)return;ok=true}tab(2)};
+$("#cam").onclick=async()=>{const E=$("#err");E.textContent="";
+ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){E.textContent="Camera is not supported in this browser. Please open this page in Chrome, or tap 'Or take / upload photo'.";return}
+ try{try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"},audio:false})}catch(e1){if(e1.name==="NotAllowedError"||e1.name==="SecurityError")throw e1;stream=await navigator.mediaDevices.getUserMedia({video:true,audio:false})}
+  const v=$("#vid");v.srcObject=stream;v.style.display="block";$("#snap").style.display="none";$("#cap").disabled=false;try{await v.play()}catch(e){}}
+ catch(e){const n=e.name||"";E.textContent=n==="NotAllowedError"||n==="SecurityError"?"Camera permission is blocked. Tap the lock icon in the address bar, set Camera to Allow, then reload. Or tap 'Or take / upload photo'.":n==="NotFoundError"||n==="OverconstrainedError"?"No camera found on this device. Please tap 'Or take / upload photo'.":n==="NotReadableError"?"Camera is being used by another app. Close it and try again, or tap 'Or take / upload photo'.":"Camera error ("+n+"). Please tap 'Or take / upload photo'.";
+  $("#upb").style.outline="3px solid var(--pr)"}};
+$("#cap").onclick=()=>{const v=$("#vid"),c=$("#snap");c.width=240;c.height=Math.round(240*(v.videoHeight||3)/(v.videoWidth||4));c.getContext("2d").drawImage(v,0,0,c.width,c.height);
+ selfie=c.toDataURL("image/jpeg",.6);if(stream)stream.getTracks().forEach(t=>t.stop());v.style.display="none";c.style.display="block";$("#selfieSt").textContent="Selfie captured ✔";$("#cap").disabled=true;};
+$("#upb").onclick=()=>$("#fup").click();
+$("#fup").onchange=e=>{const f=e.target.files[0];if(!f)return;const im=new Image();im.onload=()=>{const c=$("#snap");c.width=240;c.height=Math.round(240*im.height/im.width);c.getContext("2d").drawImage(im,0,0,c.width,c.height);selfie=c.toDataURL("image/jpeg",.6);c.style.display="block";$("#vid").style.display="none";$("#selfieSt").textContent="Selfie captured ✔";$("#err").textContent="";URL.revokeObjectURL(im.src)};im.src=URL.createObjectURL(f)};
+let PA=null;
+function paGet(){try{return JSON.parse(localStorage.getItem("pa")||"[]")}catch(e){return[]}}
+$("#mob").oninput=e=>{e.target.value=e.target.value.replace(/\D/g,"");const m=e.target.value;PA=null;$("#pa").textContent="";
+ if(m.length==10){const p=load().reverse().find(x=>x.mobile==m);if(p){$("#name").value=p.name;$("#co").value=p.company;}
+ const q=paGet().find(x=>x.mobile==m);if(q){PA=q;$("#name").value=q.name;$("#pa").textContent="✅ Pre-approved visitor"}}};
+$("#sub").onclick=()=>{const n=$("#name").value.trim(),m=$("#mob").value,h=$("#hname").value.trim(),p=$("#pur").value,v=$("#veh").value.toUpperCase().replace(/[\s-]/g,"");
+ const E=$("#err");
+ if(!n)return E.textContent="Enter visitor name";
+ if(!/^[6-9]\d{9}$/.test(m))return E.textContent="Enter valid 10-digit mobile number";
+ if(blGet().includes(m))return E.textContent="Entry not allowed. Please contact security.";
+ if(!h)return E.textContent="Please enter the name of the person to meet";
+
+ if(!p)return E.textContent="Select purpose of visit";
+ if(v&&!/^[A-Z]{2}\d{1,2}[A-Z]{0,3}\d{4}$/.test(v))return E.textContent="Vehicle format example: GJ01AB1234";
+ if(!selfie)return E.textContent="Please capture selfie";
+ if(!$("#cons").checked)return E.textContent="Please accept the consent";
+ E.textContent="";
+ const r={id:"V"+Date.now().toString(36).toUpperCase().slice(-6),name:n,mobile:m,company:$("#co").value.trim(),host:h,hostPhone:"",purpose:p,vehicle:v,selfie,pre:!!PA,inT:Date.now(),outT:null};
+ const a=load();a.push(r);save(a);last=r;if(PA){try{localStorage.setItem("pa",JSON.stringify(paGet().filter(x=>x.mobile!=m)))}catch(e){}PA=null}
+ $("#psync").textContent=SHEET_URL?"Saving…":"";flush().then(()=>{if(!SHEET_URL)return;const q=load().find(y=>y.id==r.id);$("#psync").textContent=q&&q.sy?"✔ Saved to server":"⚠ Not saved to server yet – will retry automatically"});
+ $("#v1").classList.add("hide");$("#pass").classList.remove("hide");$("#qr").innerHTML="";new QRCode($("#qr"),{text:r.id,width:170,height:170});
+ $("#pph").src=r.selfie;$("#pid").textContent="Pass ID: "+r.id;$("#pinfo").textContent=r.name+" → "+r.host+" • "+new Date(r.inT).toLocaleString();};
+$("#again").onclick=()=>{$("#f").reset();selfie="";PA=null;$("#pa").textContent="";$("#selfieSt").textContent="Selfie not captured";$("#snap").style.display="none";tab(1)};
+const fmt=t=>t?new Date(t).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"—";
+$("#d").valueAsDate=new Date();
+function render(){const a=load(),d=$("#d").value,q=$("#q").value.toLowerCase();
+ const l=a.filter(x=>new Date(x.inT).toLocaleDateString("en-CA")==d&&(x.name+x.mobile+x.id).toLowerCase().includes(q)).reverse();
+ an();$("#s1").textContent=l.length;$("#s2").textContent=l.filter(x=>!x.outT).length;$("#s3").textContent=l.filter(x=>x.outT).length;
+ $("#tb").innerHTML=l.map(x=>`<tr class="${!x.outT&&Date.now()-x.inT>OVER*36e5?'ov-row':''}"><td><img class="t" src="${x.selfie}" alt=""></td><td><b>${esc(x.name)}</b>${x.pre?" ✅":""}<br>${x.mobile}<br><small>${x.id}${x.vehicle?" • "+x.vehicle:""}</small></td><td>${esc(x.host)}<br><small>${esc(x.purpose)}</small></td><td>${fmt(x.inT)}</td><td>${x.outT?`<span class="out">${fmt(x.outT)}</span><br><small>${dur(x.outT-x.inT)}</small>`:'<span class="in">Inside</span><br><small>${dur(Date.now()-x.inT)}</small>'}</td><td>${x.outT?"":`<button style="padding:6px 10px" onclick="co('${x.id}')">Out</button>`}</td></tr>`).join("")||'<tr><td colspan="6">No visitors</td></tr>';}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function co(id){const a=load(),x=a.find(y=>y.id==id.trim().toUpperCase());if(!x)return alert("Pass ID not found");if(x.outT)return alert("Already checked out");x.outT=Date.now();save(a);flush();render();alert("Checked out: "+x.name);}
+$("#co2").onclick=()=>{co($("#pidIn").value);$("#pidIn").value=""};
+$("#q").oninput=render;$("#d").onchange=render;
+function an(){const a=load(),days=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(d.toLocaleDateString("en-CA"))}
+const c=days.map(d=>a.filter(x=>new Date(x.inT).toLocaleDateString("en-CA")==d).length),mx=Math.max(1,...c),hr={},ho={};
+a.forEach(x=>{const h=new Date(x.inT).getHours();hr[h]=(hr[h]||0)+1;ho[x.host]=(ho[x.host]||0)+1});
+const top=o=>Object.entries(o).sort((p,q)=>q[1]-p[1])[0],ph=top(hr),th=top(ho),dn=a.filter(x=>x.outT),av=dn.length?dn.reduce((t,x)=>t+x.outT-x.inT,0)/dn.length:0;
+$("#an").innerHTML=`<b>Last 7 days</b><div style="display:flex;gap:6px;align-items:flex-end;height:100px;margin:8px 0">${c.map((n,i)=>`<div style="flex:1;text-align:center;font-size:11px"><div style="height:${Math.round(n/mx*60)+2}px;background:var(--pr);border-radius:4px"></div>${n}<br>${days[i].slice(8)}</div>`).join("")}</div><div style="font-size:14px;color:var(--mu)">Peak hour: <b>${ph?ph[0]+":00":"—"}</b> • Top host: <b>${th?esc(th[0]):"—"}</b> • Avg visit: <b>${av?dur(av):"—"}</b> • Pre-approved: <b>${a.filter(x=>x.pre).length}</b></div>`}
+$("#paa").onclick=()=>{const n=$("#pn").value.trim(),m=$("#pm").value.replace(/\D/g,"");if(!n||m.length!=10)return alert("Enter name and 10-digit mobile");try{localStorage.setItem("pa",JSON.stringify([...paGet().filter(x=>x.mobile!=m),{name:n,mobile:m}]))}catch(e){}$("#pn").value=$("#pm").value="";alert("Pre-approved: "+n)};
+$("#emgb").onclick=()=>{const l=load().filter(x=>!x.outT);$("#emg").innerHTML=`<h2>🚨 Emergency Roll Call – ${esc(COMPANY)}</h2><p>${new Date().toLocaleString()} • Visitors inside: <b>${l.length}</b></p><table><tr><th>Name</th><th>Mobile</th><th>Host</th><th>In</th><th>Safe</th></tr>${l.map(x=>`<tr><td>${esc(x.name)}</td><td>${x.mobile}</td><td>${esc(x.host)}</td><td>${fmt(x.inT)}</td><td>☐</td></tr>`).join("")}</table>`;document.body.classList.add("pe");window.print();document.body.classList.remove("pe")};
+$("#sum").onclick=()=>{const T=new Date().toLocaleDateString("en-CA"),a=load().filter(x=>new Date(x.inT).toLocaleDateString("en-CA")==T),ins=a.filter(x=>!x.outT).length,ov=a.filter(x=>!x.outT&&Date.now()-x.inT>OVER*36e5).length;
+const t=`${COMPANY} – Visitor Report ${new Date().toLocaleDateString()}\nTotal visitors: ${a.length}\nStill inside: ${ins}\nChecked out: ${a.length-ins}\nPre-approved: ${a.filter(x=>x.pre).length}\nOverstay (>${OVER}h): ${ov}`;window.open(`https://wa.me/${BOSS_PHONE}?text=${encodeURIComponent(t)}`,"_blank")};
+const dur=ms=>{const m=Math.round(ms/6e4);return m>=60?Math.floor(m/60)+"h "+m%60+"m":m+"m"};
+$("#prt").onclick=()=>window.print();
+$("#all").onclick=()=>{if(!confirm("Check-out all visitors still inside?"))return;const a=load();a.forEach(x=>{if(!x.outT)x.outT=Date.now()});save(a);flush();render()};
+function blGet(){try{return JSON.parse(localStorage.getItem("bl")||"[]")}catch(e){return[]}}
+function blShow(){$("#bll").innerHTML=blGet().map(m=>`${m} <a href="#" onclick="unb('${m}');return false">[unblock]</a>`).join(" • ")}
+function unb(m){try{localStorage.setItem("bl",JSON.stringify(blGet().filter(x=>x!=m)))}catch(e){}blShow()}
+$("#bla").onclick=()=>{const m=$("#bl").value.replace(/\D/g,"");if(m.length!=10)return alert("Enter 10-digit mobile");try{localStorage.setItem("bl",JSON.stringify([...new Set([...blGet(),m])]))}catch(e){}$("#bl").value="";blShow()};
+blShow();
+let sstream=null;
+$("#scan").onclick=async()=>{if(sstream)return stopScan();try{sstream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});const v=$("#sv");v.srcObject=sstream;v.style.display="block";v.play();$("#scan").textContent="Stop scanning";tick()}catch(e){alert("Camera not available")}};
+function tick(){if(!sstream)return;const v=$("#sv"),c=$("#sc");if(v.readyState===4){c.width=v.videoWidth;c.height=v.videoHeight;const g=c.getContext("2d");g.drawImage(v,0,0);const im=g.getImageData(0,0,c.width,c.height),r=jsQR(im.data,im.width,im.height);if(r&&r.data){stopScan();co(r.data);return}}requestAnimationFrame(tick)}
+function stopScan(){if(sstream)sstream.getTracks().forEach(t=>t.stop());sstream=null;$("#sv").style.display="none";$("#scan").textContent="Scan QR to Check-out"}
+$("#rf").onclick=()=>{SS("Refreshing…");pull().then(render)};
+$("#csv").onclick=()=>{const a=load().map(x=>[x.id,x.name,x.mobile,x.company,x.host,x.purpose,x.vehicle,new Date(x.inT).toLocaleString(),x.outT?new Date(x.outT).toLocaleString():""]);
+ const c=[["PassID","Name","Mobile","Company","Host","Purpose","Vehicle","In","Out"],...a].map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\n");
+ const u=URL.createObjectURL(new Blob([c],{type:"text/csv"})),l=document.createElement("a");l.href=u;l.download="visitors.csv";l.click();};
+</script>
+</body>
+</html>
